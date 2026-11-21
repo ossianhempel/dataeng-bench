@@ -221,3 +221,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project
+.env
+.env.*
+!.env.example
+.DS_Store
+*.duckdb
+*.duckdb.wal
+results/raw/
+node_modules/
+.idea/
+.vscode/
+target/
+dbt_packages/
+logs/
