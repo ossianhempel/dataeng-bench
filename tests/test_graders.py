@@ -85,3 +85,38 @@ def test_structured_partial_credit_and_normalization():
 def test_unparseable_structured_answer():
     result = grade(load_task(NORMAL_FORMS), "I think q1 is in 2NF")
     assert result.score == 0 and result.error
+
+
+NORMALIZE = TASKS_DIR / "data_modeling/transactional/normalize_enrollments_3nf"
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "COPY (SELECT 1) TO '/tmp/dataeng_bench_escape.csv'",
+        "CREATE TABLE leak AS SELECT * FROM read_csv('/etc/passwd')",
+        "SET enable_external_access = true",
+    ],
+)
+def test_answers_cannot_touch_the_filesystem(statement, tmp_path):
+    task = load_task(FAN_TRAP)
+    result = grade(task, statement + ";\n" + task.reference_path.read_text())
+    assert result.score == 0 and "failed" in result.error
+
+
+def test_slow_view_is_interrupted_during_checks():
+    task = load_task(NORMALIZE)
+    task.timeout_seconds = 1
+    # Creating the view is instant; evaluating it never ends.
+    answer = """
+    CREATE VIEW enrollments_flat AS
+    WITH RECURSIVE r(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM r)
+    SELECT e.* FROM raw_enrollments e, r;
+    """
+    import time
+
+    start = time.monotonic()
+    result = grade(task, answer)
+    assert time.monotonic() - start < 15
+    assert not result.passed
+    assert any("Interrupt" in c.message for c in result.checks)

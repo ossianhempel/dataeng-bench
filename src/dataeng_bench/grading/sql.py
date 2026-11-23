@@ -4,11 +4,13 @@ Flow for one task:
 
 1. Create an in-memory DuckDB database and run ``fixtures/setup.sql``.
 2. Fingerprint every table the fixture created (the "source tables").
-3. Run the candidate SQL script with a timeout.
+3. Run the candidate SQL script with a timeout, with file and network access
+   disabled.
 4. Fail the task outright if a source table was dropped or changed.
 5. Run the optional ``seed`` SQL from ``checks.yaml``. Seed rows are valid
    under the task's rules, so a schema that rejects them scores zero.
-6. Run each check from ``checks.yaml`` and weight the results.
+6. Run each check from ``checks.yaml`` (each under the same timeout, since
+   checks evaluate the answer's views) and weight the results.
 
 Check types (see docs/grading.md for examples):
 
@@ -35,6 +37,8 @@ import datetime as dt
 import decimal
 import json
 import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 import duckdb
@@ -47,10 +51,18 @@ MAX_DIFF_ROWS = 5
 
 
 def _connect() -> duckdb.DuckDBPyConnection:
-    conn = duckdb.connect(":memory:")
-    # Keep grading deterministic and sandboxed: no extension installs, no file
-    # access beyond what the fixture needs.
-    conn.execute("SET TimeZone = 'UTC'")
+    # Answers are untrusted model output. Block file and network access
+    # (COPY TO, read_csv, ATTACH, httpfs ...) and extension installs, then lock
+    # the configuration so the answer cannot turn them back on.
+    conn = duckdb.connect(
+        ":memory:",
+        config={
+            "enable_external_access": False,
+            "autoinstall_known_extensions": False,
+            "autoload_known_extensions": False,
+        },
+    )
+    conn.execute("SET lock_configuration = true")
     return conn
 
 
@@ -73,11 +85,17 @@ def _fingerprint(conn: duckdb.DuckDBPyConnection, tables: list[str]) -> dict[str
     return prints
 
 
-def _run_with_timeout(conn: duckdb.DuckDBPyConnection, sql: str, timeout: float) -> None:
-    timer = threading.Timer(timeout, conn.interrupt)
+@contextmanager
+def _deadline(conn: duckdb.DuckDBPyConnection, seconds: float) -> Iterator[None]:
+    """Interrupt whatever the connection is running once ``seconds`` pass.
+
+    Used for the answer script and for every check, because a check can
+    evaluate a view the answer defined and that view can be arbitrarily slow.
+    """
+    timer = threading.Timer(seconds, conn.interrupt)
     timer.start()
     try:
-        conn.execute(sql)
+        yield
     finally:
         timer.cancel()
 
@@ -258,7 +276,8 @@ def grade_sql(task: Task, answer_sql: str) -> GradeResult:
             result.error = "empty answer"
             return result
         try:
-            _run_with_timeout(conn, answer_sql, task.timeout_seconds)
+            with _deadline(conn, task.timeout_seconds):
+                conn.execute(answer_sql)
         except duckdb.Error as exc:
             result.error = f"answer SQL failed: {type(exc).__name__}: {exc}"
             return result
@@ -276,14 +295,16 @@ def grade_sql(task: Task, answer_sql: str) -> GradeResult:
 
         if spec.get("seed"):
             try:
-                conn.execute(spec["seed"])
+                with _deadline(conn, task.timeout_seconds):
+                    conn.execute(spec["seed"])
             except duckdb.Error as exc:
                 result.error = f"valid seed data was rejected: {type(exc).__name__}: {exc}"
                 return result
 
         candidate_base_tables = [t for t in _table_names(conn, base_only=True) if t not in sources]
         for check in spec["checks"]:
-            result.checks.append(run_check(conn, check, candidate_base_tables))
+            with _deadline(conn, task.timeout_seconds):
+                result.checks.append(run_check(conn, check, candidate_base_tables))
         return result
     finally:
         conn.close()
