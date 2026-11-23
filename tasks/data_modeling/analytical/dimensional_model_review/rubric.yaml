@@ -1,0 +1,48 @@
+criteria:
+  - id: mixed_grain
+    points: 3
+    description: >
+      Identifies that fct_sales mixes header and line grains in one table, which
+      double counts or forces every query to filter on row_type. Proposes separate
+      facts (order line fact, plus an order header fact or allocating order-level
+      amounts to lines).
+  - id: repeated_order_level_amounts
+    points: 2
+    description: >
+      Points out that shipping_fee and order_total repeated on every row inflate
+      sums (fan-out), and proposes storing them once per order or allocating them
+      to lines so they become additive.
+  - id: non_additive_margin
+    points: 2
+    description: >
+      Notes margin_pct is non-additive (summing or averaging it gives wrong
+      averages) and proposes storing additive components (revenue and cost or
+      margin amount) and computing the ratio at query time.
+  - id: date_handling
+    points: 1
+    description: >
+      Flags the text date in DD/MM/YYYY (sorting, parsing, filtering) and proposes a
+      DATE column plus a date dimension key.
+  - id: history_of_segment
+    points: 2
+    description: >
+      Notes that customer_segment holds today's value, so "segment at the time of
+      the order" is impossible, and that descriptive customer attributes do not
+      belong in the fact. Proposes a Type 2 customer dimension keyed by surrogate key.
+  - id: keys
+    points: 2
+    description: >
+      Criticizes smart keys (concatenated product_key with category, sale_key) that
+      break when a product changes category and proposes meaningless surrogate keys;
+      notes null customer_id for guests should map to an unknown or guest member
+      row rather than a null foreign key; order_id kept as a degenerate dimension.
+  - id: snowflaking
+    points: 1
+    description: >
+      Notes the product -> category -> department snowflake adds joins and proposes
+      flattening category and department attributes into dim_product.
+  - id: corrected_model
+    points: 2
+    description: >
+      Presents a coherent corrected model: stated grains, fact tables with surrogate
+      foreign keys and additive measures, and the dimensions (date, customer, product).

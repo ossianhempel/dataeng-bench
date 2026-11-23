@@ -1,0 +1,27 @@
+# Notes for reviewers:
+# q1  product_id -> product_name is a partial dependency on the composite key: 1NF only.
+# q2  employee_id -> dept_id -> dept_location is transitive: 2NF.
+# q3  Every attribute is prime, so 3NF holds, but tutor is not a superkey: not BCNF.
+# q4  The only determinant is the key. With no multivalued dependencies it is also 4NF.
+# q5  Both determinants are candidate keys: BCNF, and 4NF.
+# q6  All-key relation, so BCNF, but employee_id ->> skill is a non-trivial
+#     multivalued dependency whose left side is not a superkey: not 4NF.
+fields:
+  - {path: q1.highest_normal_form, expected: 1NF, weight: 2}
+  - {path: q1.candidate_keys, match: set_of_sets, expected: [[order_id, product_id]]}
+  - {path: q1.violating_determinant, match: set, expected: [product_id]}
+  - {path: q2.highest_normal_form, expected: 2NF, weight: 2}
+  - {path: q2.candidate_keys, match: set_of_sets, expected: [[employee_id]]}
+  - {path: q2.violating_determinant, match: set, expected: [dept_id]}
+  - {path: q3.highest_normal_form, expected: 3NF, weight: 2}
+  - {path: q3.candidate_keys, match: set_of_sets, expected: [[student, subject], [student, tutor]], weight: 2}
+  - {path: q3.violating_determinant, match: set, expected: [tutor]}
+  - {path: q4.highest_normal_form, expected: 4NF, weight: 2}
+  - {path: q4.candidate_keys, match: set_of_sets, expected: [[flight_no, flight_date]]}
+  - {path: q4.violating_determinant, match: set, expected: []}
+  - {path: q5.highest_normal_form, expected: 4NF, weight: 2}
+  - {path: q5.candidate_keys, match: set_of_sets, expected: [[country_code], [country_name]], weight: 2}
+  - {path: q5.violating_determinant, match: set, expected: []}
+  - {path: q6.highest_normal_form, match: one_of, expected: [BCNF], weight: 2}
+  - {path: q6.candidate_keys, match: set_of_sets, expected: [[employee_id, skill, language]]}
+  - {path: q6.violating_determinant, match: set, expected: []}

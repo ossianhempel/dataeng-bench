@@ -1,0 +1,19 @@
+id: data_modeling.transactional.identify_normal_forms
+title: Identify candidate keys and the highest normal form of six relations
+category: data_modeling
+subcategory: transactional
+difficulty: medium
+answer_type: structured
+tags: [normalization, functional-dependencies, candidate-keys, 2nf, 3nf, bcnf, 4nf, multivalued-dependency]
+sources:
+  - title: "W. Kent, \"A Simple Guide to Five Normal Forms in Relational Database Theory\", Communications of the ACM 26(2), 1983"
+    url: https://dl.acm.org/doi/10.1145/358024.358054
+    note: Second, third and fourth normal form, including independent multivalued facts (question 6).
+  - title: "E. F. Codd, \"Recent Investigations in Relational Data Base Systems\", IFIP Congress 1974"
+    note: Introduces what is now called Boyce-Codd normal form.
+  - title: "R. Fagin, \"Multivalued Dependencies and a New Normal Form for Relational Databases\", ACM TODS 2(3), 1977"
+    url: https://dl.acm.org/doi/10.1145/320557.320571
+    note: Fourth normal form.
+  - title: "Wikipedia: Boyce-Codd normal form"
+    url: https://en.wikipedia.org/wiki/Boyce%E2%80%93Codd_normal_form
+    note: The student/course/instructor relation (question 3) is the textbook example of a 3NF relation that is not in BCNF.

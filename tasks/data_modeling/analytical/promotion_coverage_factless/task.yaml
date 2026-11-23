@@ -1,0 +1,14 @@
+id: data_modeling.analytical.promotion_coverage_factless
+title: Use a coverage factless fact table to find promoted products that did not sell
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [kimball, factless-fact, coverage, date-spine, anti-join]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (factless fact tables)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 3 (Retail Sales)"
+    note: The promotion coverage factless fact table, used to answer "what was on promotion but did not sell".
+  - title: "Kimball Group: Fact Tables"
+    url: https://www.kimballgroup.com/2008/11/fact-tables/

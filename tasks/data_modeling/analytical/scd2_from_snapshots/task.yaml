@@ -1,0 +1,18 @@
+id: data_modeling.analytical.scd2_from_snapshots
+title: Build a Type 2 slowly changing dimension from daily snapshots
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [kimball, scd, scd-type-2, scd-type-1, snapshots, gaps-and-islands, hard-deletes]
+sources:
+  - title: "Kimball Group: Type 2 (add new row)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/type-2/
+  - title: "Kimball Group Design Tip #152: Slowly Changing Dimension Types 0, 4, 5, 6 and 7"
+    url: https://www.kimballgroup.com/2013/02/design-tip-152-slowly-changing-dimension-types-0-4-5-6-7/
+    note: Mixing Type 1 and Type 2 attributes in one dimension.
+  - title: "dbt Developer Hub: Add snapshots to your DAG"
+    url: https://docs.getdbt.com/docs/build/snapshots
+    note: dbt's check strategy, valid_from/valid_to and invalidating hard deletes.
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 5 (Procurement)"
+    note: Slowly changing dimension techniques.

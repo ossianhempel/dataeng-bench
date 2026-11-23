@@ -1,0 +1,18 @@
+id: data_modeling.transactional.normalize_enrollments_3nf
+title: Normalize a flat enrollments extract to third normal form
+category: data_modeling
+subcategory: transactional
+difficulty: medium
+answer_type: sql
+tags: [normalization, 3nf, bcnf, functional-dependencies, primary-keys, foreign-keys, lossless-join]
+sources:
+  - title: "E. F. Codd, \"Further Normalization of the Data Base Relational Model\" (IBM Research Report RJ909, 1971)"
+    note: Original definitions of 2NF and 3NF.
+  - title: "W. Kent, \"A Simple Guide to Five Normal Forms in Relational Database Theory\", Communications of the ACM 26(2), 1983"
+    url: https://dl.acm.org/doi/10.1145/358024.358054
+    note: Plain-language treatment of partial and transitive dependencies used to design the business rules.
+  - title: "Wikipedia: Third normal form"
+    url: https://en.wikipedia.org/wiki/Third_normal_form
+  - title: "DataCamp: Data warehouse and data modeling interview questions"
+    url: https://www.datacamp.com/blog/data-warehouse-interview-questions
+    note: Normalization of a denormalized table is a recurring interview exercise.

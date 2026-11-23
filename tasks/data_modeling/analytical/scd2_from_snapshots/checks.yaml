@@ -1,0 +1,72 @@
+checks:
+  - name: has_required_columns
+    type: columns
+    table: dim_customer_scd2
+    columns: [customer_id, email, tier, city, valid_from, valid_to, is_current]
+
+  - name: version_count_per_customer
+    type: rows
+    weight: 2
+    sql: SELECT customer_id, count(*) FROM dim_customer_scd2 GROUP BY 1
+    expected: [[C1, 3], [C2, 2], [C3, 1], [C4, 1]]
+
+  - name: reverted_change_is_a_new_version
+    type: rows
+    weight: 2
+    sql: |
+      SELECT tier, CAST(valid_from AS VARCHAR), CAST(valid_to AS VARCHAR)
+      FROM dim_customer_scd2 WHERE customer_id = 'C1'
+    expected:
+      - [silver, '2024-01-01', '2024-01-05']
+      - [gold, '2024-01-05', '2024-01-08']
+      - [silver, '2024-01-08', null]
+
+  - name: null_to_value_is_a_change
+    type: rows
+    sql: |
+      SELECT city, CAST(valid_from AS VARCHAR), CAST(valid_to AS VARCHAR)
+      FROM dim_customer_scd2 WHERE customer_id = 'C2'
+    expected:
+      - [null, '2024-01-01', '2024-01-03']
+      - [Bergen, '2024-01-03', null]
+
+  - name: deleted_customer_is_closed
+    type: rows
+    weight: 2
+    sql: |
+      SELECT CAST(valid_from AS VARCHAR), CAST(valid_to AS VARCHAR), is_current
+      FROM dim_customer_scd2 WHERE customer_id = 'C3'
+    expected: [['2024-01-02', '2024-01-05', false]]
+
+  - name: email_is_type_1
+    type: assert
+    weight: 2
+    sql: |
+      SELECT bool_and(email = 'a2@mail.test') AND count(*) = 3
+      FROM dim_customer_scd2 WHERE customer_id = 'C1'
+
+  - name: one_current_row_per_live_customer
+    type: rows
+    sql: SELECT customer_id FROM dim_customer_scd2 WHERE is_current
+    expected: [[C1], [C2], [C4]]
+
+  - name: full_dimension_matches
+    type: rows
+    weight: 3
+    sql: |
+      SELECT customer_id, email, tier, city, CAST(valid_from AS VARCHAR), CAST(valid_to AS VARCHAR), is_current
+      FROM dim_customer_scd2
+    expected:
+      - [C1, a2@mail.test, silver, Oslo, '2024-01-01', '2024-01-05', false]
+      - [C1, a2@mail.test, gold, Oslo, '2024-01-05', '2024-01-08', false]
+      - [C1, a2@mail.test, silver, Oslo, '2024-01-08', null, true]
+      - [C2, b@mail.test, bronze, null, '2024-01-01', '2024-01-03', false]
+      - [C2, b@mail.test, bronze, Bergen, '2024-01-03', null, true]
+      - [C3, c@mail.test, silver, Lund, '2024-01-02', '2024-01-05', false]
+      - [C4, d@mail.test, gold, Malmo, '2024-01-05', null, true]
+
+  - name: valid_dates_are_dates
+    type: assert
+    sql: |
+      SELECT count(*) = 2 AND bool_and(data_type = 'DATE') FROM information_schema.columns
+      WHERE table_name = 'dim_customer_scd2' AND column_name IN ('valid_from', 'valid_to')

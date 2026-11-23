@@ -1,0 +1,17 @@
+id: data_modeling.analytical.order_fulfillment_accumulating_snapshot
+title: Build an accumulating snapshot fact table for order fulfillment
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [kimball, accumulating-snapshot, milestones, lag-measures, event-data, pivot]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (accumulating snapshot fact tables)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "Kimball Group Design Tip #145: Timespan Accumulating Snapshot Fact Tables"
+    url: https://www.kimballgroup.com/2012/05/design-tip-145-time-stamping-accumulating-snapshot-fact-tables/
+  - title: "Kimball Group Design Tip #167: Complementary Fact Table Types"
+    url: https://www.kimballgroup.com/2014/06/design-tip-167-complementary-fact-table-types/
+    note: Deriving an accumulating snapshot from transaction events.
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 4 (Inventory)"
+    note: Accumulating snapshot with milestone dates and lag measures for order fulfillment.

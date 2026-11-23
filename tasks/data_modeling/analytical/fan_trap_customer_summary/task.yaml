@@ -1,0 +1,16 @@
+id: data_modeling.analytical.fan_trap_customer_summary
+title: Aggregate across two one-to-many relationships without double counting
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [fan-trap, chasm-trap, grain, double-counting, aggregation]
+sources:
+  - title: "Coginiti glossary: Fan and chasm traps"
+    url: https://coginiti.co/glossary/fan-chasm-traps/
+  - title: "Snowflake engineering blog: Why do we need semantic views? Avoiding subtle mistakes in complex calculations"
+    url: https://www.snowflake.com/en/blog/engineering/why-we-need-semantic-views/
+    note: Joining facts of different grains inflates aggregates.
+  - title: "Kimball Group: The 10 Essential Rules of Dimensional Modeling"
+    url: https://www.kimballgroup.com/2009/05/the-10-essential-rules-of-dimensional-modeling/
+    note: Do not mix grains in one fact table; aggregate each grain separately (drill across).

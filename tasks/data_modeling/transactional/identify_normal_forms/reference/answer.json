@@ -1,0 +1,8 @@
+{
+  "q1": {"candidate_keys": [["order_id", "product_id"]], "highest_normal_form": "1NF", "violating_determinant": ["product_id"]},
+  "q2": {"candidate_keys": [["employee_id"]], "highest_normal_form": "2NF", "violating_determinant": ["dept_id"]},
+  "q3": {"candidate_keys": [["student", "subject"], ["student", "tutor"]], "highest_normal_form": "3NF", "violating_determinant": ["tutor"]},
+  "q4": {"candidate_keys": [["flight_no", "flight_date"]], "highest_normal_form": "4NF", "violating_determinant": []},
+  "q5": {"candidate_keys": [["country_code"], ["country_name"]], "highest_normal_form": "4NF", "violating_determinant": []},
+  "q6": {"candidate_keys": [["employee_id", "skill", "language"]], "highest_normal_form": "BCNF", "violating_determinant": []}
+}

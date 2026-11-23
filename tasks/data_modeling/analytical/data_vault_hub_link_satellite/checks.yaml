@@ -1,0 +1,73 @@
+checks:
+  - {name: hub_customer_columns, type: columns, table: hub_customer, columns: [customer_hk, customer_number, load_ts, record_source]}
+  - {name: hub_order_columns, type: columns, table: hub_order, columns: [order_hk, order_number, load_ts, record_source]}
+  - {name: link_columns, type: columns, table: link_customer_order, columns: [customer_order_hk, customer_hk, order_hk, load_ts, record_source]}
+  - {name: sat_columns, type: columns, table: sat_customer_details, columns: [customer_hk, load_ts, hash_diff, name, email, record_source]}
+
+  - name: hub_customer_rows
+    type: rows
+    weight: 3
+    sql: |
+      SELECT customer_number, customer_hk = md5(customer_number), CAST(load_ts AS VARCHAR), record_source
+      FROM hub_customer
+    expected:
+      - [C-001, true, '2024-01-01 00:00:00', crm]
+      - [C-002, true, '2024-01-01 00:00:00', crm]
+      - [C-003, true, '2024-01-01 00:00:00', crm]
+      - [C-004, true, '2024-01-02 00:00:00', crm]
+
+  - name: hub_order_rows
+    type: rows
+    weight: 2
+    sql: |
+      SELECT order_number, order_hk = md5(order_number), CAST(load_ts AS VARCHAR), record_source
+      FROM hub_order
+    expected:
+      - [O-1, true, '2024-01-01 00:00:00', webshop]
+      - [O-2, true, '2024-01-01 00:00:00', webshop]
+      - [O-3, true, '2024-01-02 00:00:00', webshop]
+
+  - name: link_rows
+    type: rows
+    weight: 3
+    sql: |
+      SELECT hc.customer_number, ho.order_number,
+             l.customer_order_hk = md5(hc.customer_number || '||' || ho.order_number),
+             CAST(l.load_ts AS VARCHAR)
+      FROM link_customer_order l
+      JOIN hub_customer hc USING (customer_hk)
+      JOIN hub_order ho USING (order_hk)
+    expected:
+      - [C-001, O-1, true, '2024-01-01 00:00:00']
+      - [C-002, O-2, true, '2024-01-01 00:00:00']
+      - [C-004, O-3, true, '2024-01-02 00:00:00']
+
+  - name: link_has_no_duplicates_or_orphans
+    type: assert
+    sql: |
+      SELECT count(*) = 3 AND count(DISTINCT customer_order_hk) = 3
+         AND count(hc.customer_hk) = 3 AND count(ho.order_hk) = 3
+      FROM link_customer_order l
+      LEFT JOIN hub_customer hc USING (customer_hk)
+      LEFT JOIN hub_order ho USING (order_hk)
+
+  - name: satellite_loads_only_changes
+    type: rows
+    weight: 4
+    sql: |
+      SELECT h.customer_number, CAST(s.load_ts AS VARCHAR), s.name, s.email
+      FROM sat_customer_details s JOIN hub_customer h USING (customer_hk)
+    expected:
+      - [C-001, '2024-01-01 00:00:00', Ana Alm, ana@mail.test]
+      - [C-002, '2024-01-01 00:00:00', Ben Berg, ben@mail.test]
+      - [C-003, '2024-01-01 00:00:00', Cai, cai@mail.test]
+      - [C-003, '2024-01-02 00:00:00', Cai Dahl, cai@mail.test]
+      - [C-003, '2024-01-03 00:00:00', Cai, cai@mail.test]
+      - [C-004, '2024-01-02 00:00:00', Dan Ek, dan@mail.test]
+
+  - name: satellite_hash_diff
+    type: assert
+    weight: 2
+    sql: |
+      SELECT count(*) = 6 AND bool_and(hash_diff = md5(coalesce(name, '') || '||' || coalesce(email, '')))
+      FROM sat_customer_details

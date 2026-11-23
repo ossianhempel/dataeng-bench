@@ -1,0 +1,66 @@
+criteria:
+  - id: grain_declared
+    points: 3
+    description: >
+      Declares an explicit grain for every fact table. The core is a periodic
+      snapshot at subscription (or customer) by month grain holding MRR, ideally
+      complemented by a transaction fact of subscription change events (or
+      invoice lines) at one-row-per-event grain. 2 points if grains are stated
+      but one is ambiguous or mixes grains; 1 if only implied.
+  - id: fact_types
+    points: 2
+    description: >
+      Names the fact table types correctly (for example monthly periodic snapshot
+      for MRR, transaction fact for subscription events or invoices) and explains
+      why a snapshot is needed for balances like MRR.
+  - id: dimensions_and_conformance
+    points: 2
+    description: >
+      Provides customer, plan (with billing interval), date/month, and channel or
+      segment dimensions with conformed keys shared across facts. Currency handled
+      via a dimension or a rate table.
+  - id: history_handling
+    points: 2
+    description: >
+      Handles changing attributes so slices are "as they were at the time":
+      Type 2 on customer segment/country (or snapshotting attributes on the monthly
+      row), and plan changes captured per month. 1 point if history is mentioned
+      but the mechanism is unclear.
+  - id: additivity
+    points: 2
+    description: >
+      Identifies MRR and customer counts as semi-additive over time (sum across
+      customers or plans within a month, never across months; use period-end
+      or average), movement amounts as additive, and rates such as churn rate and
+      NRR as non-additive ratios computed from additive parts.
+  - id: mrr_rules
+    points: 3
+    description: >
+      Gives concrete MRR rules: annual plans normalized to monthly (divide by 12);
+      trials contribute 0 MRR; MRR measured at a consistent point in the month
+      (for example month end) so mid-month changes appear in the next snapshot;
+      one-off fees, taxes and usage excluded; pauses treated explicitly; EUR
+      converted with a stated rate policy (for example fixed budget rate or
+      month-end rate) to avoid FX noise; refunds and credit notes do not change
+      MRR unless they change the recurring price. 1 point per two rules covered well.
+  - id: movement_logic
+    points: 3
+    description: >
+      Defines MRR movements by comparing each subscription or customer's MRR this
+      month with last month: new (0 before, never active), reactivated (0 before
+      but active in the past), expansion (increase), contraction (decrease but
+      still above 0), churned (above 0 to 0). States that the movements reconcile:
+      opening MRR + new + reactivation + expansion - contraction - churn = closing MRR.
+  - id: metric_definitions
+    points: 2
+    description: >
+      Defines logo churn rate (churned customers / customers active at start of
+      month) and net revenue retention (MRR this month from customers active a
+      period earlier / their MRR then) with the correct denominators.
+  - id: edge_cases
+    points: 1
+    description: >
+      Mentions at least two further pitfalls: customers with multiple
+      subscriptions (customer-level versus subscription-level churn), backdated
+      changes and restating history, a customer moving between segments, or
+      timezone of month boundaries.

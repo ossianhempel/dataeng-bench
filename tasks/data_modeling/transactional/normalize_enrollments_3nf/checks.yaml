@@ -1,0 +1,49 @@
+checks:
+  - name: flat_view_has_original_columns
+    type: columns
+    table: enrollments_flat
+    columns: [student_id, student_name, student_email, course_code, course_title, dept_code,
+              dept_name, semester, instructor_id, instructor_name, grade]
+
+  - name: flat_view_reconstructs_source_exactly
+    type: assert
+    weight: 3
+    sql: |
+      WITH flat AS (
+        SELECT student_id, student_name, student_email, course_code, course_title, dept_code,
+               dept_name, semester, instructor_id, instructor_name, grade
+        FROM enrollments_flat
+      )
+      SELECT count(*) = 0 FROM (
+        (SELECT * FROM raw_enrollments EXCEPT ALL SELECT * FROM flat)
+        UNION ALL
+        (SELECT * FROM flat EXCEPT ALL SELECT * FROM raw_enrollments)
+      )
+
+  - name: no_redundant_dependencies
+    type: fd_normalized
+    weight: 4
+    fds:
+      - {determinant: [student_id], dependent: [student_name, student_email]}
+      - {determinant: [course_code], dependent: [course_title, dept_code, dept_name]}
+      - {determinant: [dept_code], dependent: [dept_name]}
+      - {determinant: [instructor_id], dependent: [instructor_name]}
+      - {determinant: [course_code, semester], dependent: [instructor_id, instructor_name]}
+
+  - name: every_table_has_primary_key
+    type: assert
+    sql: |
+      SELECT count(*) >= 4 AND bool_and(has_pk) FROM (
+        SELECT t.table_name,
+               EXISTS (SELECT 1 FROM duckdb_constraints() c
+                       WHERE c.table_name = t.table_name AND c.constraint_type = 'PRIMARY KEY') AS has_pk
+        FROM information_schema.tables t
+        WHERE t.table_schema = 'main' AND t.table_type = 'BASE TABLE'
+          AND t.table_name <> 'raw_enrollments'
+      )
+
+  - name: foreign_keys_declared
+    type: assert
+    sql: |
+      SELECT count(*) >= 5 FROM duckdb_constraints()
+      WHERE constraint_type = 'FOREIGN KEY' AND table_name <> 'raw_enrollments'

@@ -1,0 +1,15 @@
+id: data_modeling.transactional.employee_hierarchy_adjacency_list
+title: Model an employee hierarchy as a constrained adjacency list and flatten it
+category: data_modeling
+subcategory: transactional
+difficulty: medium
+answer_type: sql
+tags: [hierarchy, adjacency-list, self-referencing-foreign-key, recursive-cte, check-constraints]
+sources:
+  - title: "J. Celko, Joe Celko's Trees and Hierarchies in SQL for Smarties, 2nd ed., Morgan Kaufmann, 2012"
+    note: Adjacency list model and its integrity constraints.
+  - title: "DuckDB documentation: WITH clause (recursive CTEs)"
+    url: https://duckdb.org/docs/stable/sql/query_syntax/with.html
+  - title: "Kimball Group: Dimensional Modeling Techniques (ragged/variable depth hierarchies)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+    note: Flattening a recursive hierarchy for reporting.

@@ -1,0 +1,25 @@
+checks:
+  - {name: fct_orders_columns, type: columns, table: fct_orders, columns: [order_id, customer_sk, order_date, amount]}
+
+  - name: one_row_per_order
+    type: assert
+    weight: 2
+    sql: SELECT count(*) = 7 AND count(DISTINCT order_id) = 7 FROM fct_orders
+
+  - name: surrogate_key_as_of_order_date
+    type: rows
+    weight: 4
+    sql: SELECT order_id, customer_sk FROM fct_orders
+    expected: [[1, 1], [2, 2], [3, -1], [4, 3], [5, 4], [6, 5], [7, -1]]
+
+  - name: revenue_by_historical_tier
+    type: rows
+    weight: 2
+    sql: SELECT tier, revenue FROM rpt_revenue_by_tier_historical
+    expected: [[silver, 220.00], [gold, 500.00], [bronze, 80.00], [Unknown, 90.00]]
+
+  - name: revenue_by_current_tier
+    type: rows
+    weight: 2
+    sql: SELECT tier, revenue FROM rpt_revenue_by_tier_current
+    expected: [[gold, 600.00], [silver, 250.00], [Unknown, 40.00]]

@@ -1,0 +1,33 @@
+checks:
+  - name: has_required_columns
+    type: columns
+    table: rpt_customer_summary
+    columns: [customer_id, order_count, items_ordered, order_value, amount_paid]
+
+  - name: includes_customers_without_orders
+    type: rows
+    sql: SELECT customer_id, order_count, items_ordered, order_value, amount_paid FROM rpt_customer_summary WHERE customer_id = 'C3'
+    expected: [[C3, 0, 0, 0, 0]]
+
+  - name: items_not_multiplied_by_payments
+    type: rows
+    weight: 2
+    sql: SELECT customer_id, items_ordered FROM rpt_customer_summary
+    expected: [[C1, 4], [C2, 4], [C3, 0]]
+
+  - name: order_value_not_multiplied_by_items
+    type: rows
+    weight: 2
+    sql: SELECT customer_id, order_value FROM rpt_customer_summary
+    expected: [[C1, 150.00], [C2, 80.00], [C3, 0]]
+
+  - name: payments_not_multiplied_by_items
+    type: rows
+    weight: 2
+    sql: SELECT customer_id, amount_paid FROM rpt_customer_summary
+    expected: [[C1, 100.00], [C2, 80.00], [C3, 0]]
+
+  - name: order_count
+    type: rows
+    sql: SELECT customer_id, order_count FROM rpt_customer_summary
+    expected: [[C1, 2], [C2, 1], [C3, 0]]

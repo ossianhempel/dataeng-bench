@@ -1,0 +1,38 @@
+checks:
+  - {name: bridge_columns, type: columns, table: bridge_account_customer, columns: [account_id, customer_id, weighting_factor]}
+
+  - name: weights_sum_to_one_per_account
+    type: assert
+    weight: 2
+    sql: |
+      SELECT count(*) = 4 AND bool_and(abs(total - 1) < 0.0001)
+      FROM (SELECT account_id, sum(weighting_factor) AS total FROM bridge_account_customer GROUP BY 1)
+
+  - name: bridge_weights
+    type: rows
+    weight: 3
+    sql: SELECT account_id, customer_id, round(weighting_factor, 4) FROM bridge_account_customer
+    expected:
+      - [A1, K1, 0.3333]
+      - [A1, K2, 0.3333]
+      - [A1, K3, 0.3333]
+      - [A2, K1, 1.0]
+      - [A3, K3, 0.6]
+      - [A3, K4, 0.4]
+      - [A4, K2, 0.5]
+      - [A4, K4, 0.5]
+
+  - name: allocated_balance_by_segment
+    type: rows
+    weight: 3
+    sql: SELECT segment, allocated_balance FROM rpt_balance_by_segment
+    expected: [[retail, 925.00], [private, 900.00], [business, 425.00]]
+
+  - name: allocation_reconciles_to_total
+    type: assert
+    sql: SELECT abs(sum(allocated_balance) - 2250) < 0.02 FROM rpt_balance_by_segment
+
+  - name: account_count_by_segment
+    type: rows
+    sql: SELECT segment, account_count FROM rpt_balance_by_segment
+    expected: [[retail, 3], [private, 2], [business, 2]]

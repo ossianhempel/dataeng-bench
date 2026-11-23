@@ -1,0 +1,15 @@
+id: data_modeling.analytical.inventory_periodic_snapshot
+title: Build a daily inventory periodic snapshot with semi-additive measures
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [kimball, periodic-snapshot, semi-additive, densification, running-total]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (periodic snapshot fact tables; additive, semi-additive, non-additive facts)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 4 (Inventory)"
+    note: Daily inventory snapshot; quantity on hand is semi-additive and must be averaged, not summed, over time.
+  - title: "Kimball Group Design Tip #167: Complementary Fact Table Types"
+    url: https://www.kimballgroup.com/2014/06/design-tip-167-complementary-fact-table-types/
+    note: Deriving a periodic snapshot from a transaction fact table.

@@ -1,0 +1,16 @@
+id: data_modeling.analytical.dimensional_model_review
+title: Review a flawed sales data model and propose fixes
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: rubric
+tags: [kimball, model-review, mixed-grain, smart-keys, snowflaking, degenerate-dimension, dbt-layers]
+sources:
+  - title: "Kimball Group: The 10 Essential Rules of Dimensional Modeling"
+    url: https://www.kimballgroup.com/2009/05/the-10-essential-rules-of-dimensional-modeling/
+  - title: "Kimball Group: Dimensional Modeling Techniques"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+    note: Surrogate keys, degenerate dimensions, avoiding nulls in foreign keys, flattened dimensions.
+  - title: "dbt Developer Hub: How we structure our dbt projects"
+    url: https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview
+    note: Staging, intermediate and marts layers.

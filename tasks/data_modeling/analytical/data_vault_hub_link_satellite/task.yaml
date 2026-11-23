@@ -1,0 +1,16 @@
+id: data_modeling.analytical.data_vault_hub_link_satellite
+title: Load Data Vault 2.0 hubs, a link and a satellite from staged batches
+category: data_modeling
+subcategory: analytical
+difficulty: hard
+answer_type: sql
+tags: [data-vault, hub, link, satellite, hash-keys, hash-diff, insert-only, business-keys]
+sources:
+  - title: "D. Linstedt and M. Olschimke, Building a Scalable Data Warehouse with Data Vault 2.0, Morgan Kaufmann, 2015"
+    url: https://www.oreilly.com/library/view/building-a-scalable/9780128026489/
+    note: Hubs, links, satellites, hash keys and hash diffs.
+  - title: "Wikipedia: Data vault modeling"
+    url: https://en.wikipedia.org/wiki/Data_vault_modeling
+  - title: "Microsoft Tech Community: Data Vault 2.0 modelling on Synapse data warehouse"
+    url: https://techcommunity.microsoft.com/t5/analytics-on-azure-blog/data-vault-2-0-modelling-on-synapse-data-warehouse/ba-p/4003349
+    note: Business key normalization before hashing, and loading satellites only on change.

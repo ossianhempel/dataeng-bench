@@ -1,0 +1,56 @@
+criteria:
+  - id: entities_complete
+    points: 2
+    description: >
+      Models patients, clinicians, clinics, rooms, specialties, appointment types,
+      clinician availability and appointments as separate entities with sensible
+      attributes. 1 point if one or two are missing or merged inappropriately.
+  - id: many_to_many_resolved
+    points: 2
+    description: >
+      Resolves clinician-specialty and clinician-clinic many-to-many relationships
+      with junction tables (composite or surrogate key plus uniqueness). 1 point if
+      only one of the two is resolved correctly.
+  - id: keys_and_integrity
+    points: 2
+    description: >
+      Every table has a primary key; foreign keys connect appointments to patient,
+      clinician, room and appointment type; rooms belong to a clinic; unique
+      constraints on natural keys such as patient email. 1 point if keys are present
+      but foreign keys or unique constraints are notably incomplete.
+  - id: double_booking_prevention
+    points: 3
+    description: >
+      Enforces no overlapping appointments for the same clinician and for the same
+      room in the database, for example a PostgreSQL exclusion constraint on a time
+      range, or a slot table with unique (clinician, slot) and (room, slot). Must cover
+      both clinician and room and must exclude cancelled appointments from the check.
+      2 points if enforced only in application code with a clear locking or
+      transactional strategy, or if one of clinician/room is missed. 1 point if only
+      mentioned without a mechanism. 0 if a plain unique constraint on start time
+      is presented as sufficient.
+  - id: history_and_status
+    points: 2
+    description: >
+      Keeps cancellations and reschedules as history rather than deleting or
+      overwriting: status lifecycle plus an event or history table (or equivalent)
+      recording who, when, why and the previous time slot, so reschedule frequency is
+      queryable. 1 point if status columns exist but reschedule history is lost.
+  - id: normalization
+    points: 2
+    description: >
+      No redundant copies of attributes that belong elsewhere (for example patient
+      name or clinic address on the appointment), no repeating groups such as
+      specialty_1, specialty_2. Storing the price charged on the appointment is
+      fine and is not redundancy. 1 point for one minor redundancy.
+  - id: temporal_correctness
+    points: 1
+    description: >
+      Uses time-zone-aware timestamps (or UTC plus the clinic time zone), stores an
+      end time or duration per appointment and checks end after start.
+  - id: trade_offs
+    points: 1
+    description: >
+      States at least one concrete trade-off and the rejected alternative, for
+      example exclusion constraint versus slot table, or surrogate versus natural
+      keys, or soft-delete versus event table.

@@ -1,0 +1,30 @@
+checks:
+  - {name: coverage_columns, type: columns, table: fct_promotion_coverage, columns: [coverage_date, promotion_id, store_id, sku]}
+
+  - name: coverage_one_row_per_promoted_day
+    type: rows
+    weight: 3
+    sql: SELECT CAST(coverage_date AS VARCHAR), promotion_id, store_id, sku FROM fct_promotion_coverage
+    expected:
+      - ['2024-05-01', PR1, S1, A]
+      - ['2024-05-02', PR1, S1, A]
+      - ['2024-05-03', PR1, S1, A]
+      - ['2024-05-01', PR1, S2, A]
+      - ['2024-05-02', PR1, S2, A]
+      - ['2024-05-03', PR1, S2, A]
+      - ['2024-05-02', PR2, S1, B]
+      - ['2024-05-03', PR2, S1, B]
+      - ['2024-05-04', PR2, S1, B]
+      - ['2024-05-05', PR3, S2, C]
+
+  - name: coverage_date_is_a_date
+    type: assert
+    sql: |
+      SELECT data_type = 'DATE' FROM information_schema.columns
+      WHERE table_name = 'fct_promotion_coverage' AND column_name = 'coverage_date'
+
+  - name: promoted_but_not_sold
+    type: rows
+    weight: 4
+    sql: SELECT promotion_id, store_id, sku FROM rpt_promoted_not_sold
+    expected: [[PR1, S2, A], [PR2, S1, B], [PR3, S2, C]]

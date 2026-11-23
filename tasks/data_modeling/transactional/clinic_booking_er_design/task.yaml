@@ -1,0 +1,17 @@
+id: data_modeling.transactional.clinic_booking_er_design
+title: Design the OLTP schema for a clinic appointment booking system
+category: data_modeling
+subcategory: transactional
+difficulty: hard
+answer_type: rubric
+tags: [er-design, oltp, many-to-many, constraints, double-booking, audit-history]
+sources:
+  - title: "P. P. Chen, \"The Entity-Relationship Model: Toward a Unified View of Data\", ACM TODS 1(1), 1976"
+    url: https://dl.acm.org/doi/10.1145/320434.320440
+    note: Entities, relationships and resolving many-to-many relationships.
+  - title: "PostgreSQL documentation: Exclusion constraints"
+    url: https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-EXCLUSION
+    note: One standard way to forbid overlapping bookings in the database.
+  - title: "Exponent: How to answer data modeling questions"
+    url: https://www.tryexponent.com/courses/data-engineering/data-modeling-interviews/answer-data-modeling-questions
+    note: Open-ended "design the schema for app X" is the common interview format this task follows.

@@ -1,0 +1,125 @@
+# Seed rows follow every rule. Each "rejects" check breaks exactly one rule and
+# is otherwise valid, so it can only fail for the intended reason.
+seed: |
+  INSERT INTO customers (customer_id, email, full_name, created_at) VALUES
+      (1, 'ana@shop.test', 'Ana Alm', TIMESTAMP '2024-01-05 08:00:00'),
+      (2, 'ben@shop.test', 'Ben Berg', NULL);
+  INSERT INTO products (sku, name, unit_price, is_active) VALUES
+      ('SKU-1', 'Mug', 12.50, TRUE),
+      ('SKU-2', 'Sticker', 0.00, TRUE),
+      ('SKU-3', 'Poster', 20.00, FALSE);
+  INSERT INTO orders (order_id, customer_id, status, ordered_at, shipped_at) VALUES
+      (100, 1, 'paid', TIMESTAMP '2024-03-01 10:00:00', NULL),
+      (101, 2, 'shipped', TIMESTAMP '2024-03-02 09:00:00', TIMESTAMP '2024-03-03 12:00:00');
+  INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES
+      (100, 1, 'SKU-1', 2, 12.50),
+      (100, 2, 'SKU-2', 1, 0.00),
+      (101, 1, 'SKU-1', 1, 12.50);
+
+checks:
+  # Valid rows must be accepted.
+  - name: accepts_new_customer_without_created_at
+    type: accepts
+    sql: INSERT INTO customers (customer_id, email, full_name) VALUES (3, 'cai@shop.test', 'Cai Dahl')
+  - name: order_status_defaults_to_pending
+    type: accepts
+    sql: INSERT INTO orders (order_id, customer_id, ordered_at) VALUES (102, 1, TIMESTAMP '2024-03-05 10:00:00')
+    assert_sql: SELECT status = 'pending' FROM orders WHERE order_id = 102
+  - name: product_defaults_to_active
+    type: accepts
+    sql: INSERT INTO products (sku, name, unit_price) VALUES ('SKU-9', 'Pen', 1.00)
+    assert_sql: SELECT is_active FROM products WHERE sku = 'SKU-9'
+  - name: accepts_cancelled_order_without_shipping
+    type: accepts
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (103, 2, 'cancelled', TIMESTAMP '2024-03-06 10:00:00')
+  - name: accepts_shipping_at_order_time
+    type: accepts
+    sql: |
+      INSERT INTO orders (order_id, customer_id, status, ordered_at, shipped_at)
+      VALUES (104, 2, 'shipped', TIMESTAMP '2024-03-07 10:00:00', TIMESTAMP '2024-03-07 10:00:00')
+  - name: accepts_same_product_on_different_orders
+    type: accepts
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (101, 2, 'SKU-2', 3, 0.00)
+
+  # customers
+  - name: rejects_duplicate_customer_id
+    type: rejects
+    sql: INSERT INTO customers (customer_id, email, full_name) VALUES (1, 'new@shop.test', 'New Person')
+  - name: rejects_duplicate_email
+    type: rejects
+    sql: INSERT INTO customers (customer_id, email, full_name) VALUES (5, 'ana@shop.test', 'Other Ana')
+  - name: rejects_missing_email
+    type: rejects
+    sql: INSERT INTO customers (customer_id, email, full_name) VALUES (6, NULL, 'No Email')
+  - name: rejects_missing_full_name
+    type: rejects
+    sql: INSERT INTO customers (customer_id, email, full_name) VALUES (7, 'noname@shop.test', NULL)
+
+  # products
+  - name: rejects_duplicate_sku
+    type: rejects
+    sql: INSERT INTO products (sku, name, unit_price) VALUES ('SKU-1', 'Other mug', 5.00)
+  - name: rejects_negative_price
+    type: rejects
+    sql: INSERT INTO products (sku, name, unit_price) VALUES ('SKU-7', 'Refund', -1.00)
+  - name: rejects_missing_price
+    type: rejects
+    sql: INSERT INTO products (sku, name, unit_price) VALUES ('SKU-8', 'Mystery', NULL)
+  - name: rejects_missing_product_name
+    type: rejects
+    sql: INSERT INTO products (sku, name, unit_price) VALUES ('SKU-6', NULL, 3.00)
+
+  # orders
+  - name: rejects_order_for_unknown_customer
+    type: rejects
+    weight: 2
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (110, 999, 'paid', TIMESTAMP '2024-03-01 10:00:00')
+  - name: rejects_order_without_customer
+    type: rejects
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (111, NULL, 'paid', TIMESTAMP '2024-03-01 10:00:00')
+  - name: rejects_unknown_status
+    type: rejects
+    weight: 2
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (112, 1, 'lost', TIMESTAMP '2024-03-01 10:00:00')
+  - name: rejects_missing_ordered_at
+    type: rejects
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (113, 1, 'paid', NULL)
+  - name: rejects_shipped_before_ordered
+    type: rejects
+    weight: 2
+    sql: |
+      INSERT INTO orders (order_id, customer_id, status, ordered_at, shipped_at)
+      VALUES (114, 1, 'shipped', TIMESTAMP '2024-03-05 10:00:00', TIMESTAMP '2024-03-04 10:00:00')
+  - name: rejects_shipped_status_without_shipped_at
+    type: rejects
+    weight: 2
+    sql: INSERT INTO orders (order_id, customer_id, status, ordered_at) VALUES (115, 1, 'shipped', TIMESTAMP '2024-03-05 10:00:00')
+
+  # order_items
+  - name: rejects_line_for_unknown_order
+    type: rejects
+    weight: 2
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (999, 1, 'SKU-1', 1, 12.50)
+  - name: rejects_line_for_unknown_product
+    type: rejects
+    weight: 2
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 3, 'SKU-404', 1, 1.00)
+  - name: rejects_duplicate_line_number
+    type: rejects
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 1, 'SKU-3', 1, 20.00)
+  - name: rejects_same_product_twice_on_order
+    type: rejects
+    weight: 2
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 3, 'SKU-1', 1, 12.50)
+  - name: rejects_zero_quantity
+    type: rejects
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 3, 'SKU-3', 0, 20.00)
+  - name: rejects_line_number_zero
+    type: rejects
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 0, 'SKU-3', 1, 20.00)
+  - name: rejects_negative_line_price
+    type: rejects
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 3, 'SKU-3', 1, -5.00)
+  - name: rejects_missing_line_price
+    type: rejects
+    sql: INSERT INTO order_items (order_id, line_number, sku, quantity, unit_price) VALUES (100, 3, 'SKU-3', 1, NULL)

@@ -1,0 +1,39 @@
+checks:
+  - {name: employees_columns, type: columns, table: employees, columns: [employee_id, name, manager_id]}
+  - {name: org_chart_columns, type: columns, table: org_chart, columns: [employee_id, name, depth, path, report_count]}
+
+  - name: all_employees_loaded
+    type: rows
+    sql: SELECT count(*) FROM employees
+    expected: [[7]]
+
+  - name: accepts_new_report
+    type: accepts
+    sql: INSERT INTO employees (employee_id, name, manager_id) VALUES (8, 'Hal', 5)
+  - name: rejects_unknown_manager
+    type: rejects
+    weight: 2
+    sql: INSERT INTO employees (employee_id, name, manager_id) VALUES (9, 'Ivy', 42)
+  - name: rejects_self_manager
+    type: rejects
+    weight: 2
+    sql: INSERT INTO employees (employee_id, name, manager_id) VALUES (10, 'Jo', 10)
+  - name: rejects_duplicate_id
+    type: rejects
+    sql: INSERT INTO employees (employee_id, name, manager_id) VALUES (3, 'Kim', 1)
+  - name: rejects_missing_name
+    type: rejects
+    sql: INSERT INTO employees (employee_id, name, manager_id) VALUES (11, NULL, 1)
+
+  - name: org_chart_rows
+    type: rows
+    weight: 4
+    sql: SELECT employee_id, name, depth, path, report_count FROM org_chart
+    expected:
+      - [1, Ada, 0, Ada, 6]
+      - [2, Bo, 1, Ada > Bo, 3]
+      - [3, Cy, 1, Ada > Cy, 1]
+      - [4, Dee, 2, Ada > Bo > Dee, 1]
+      - [5, Eli, 3, Ada > Bo > Dee > Eli, 0]
+      - [6, Fia, 2, Ada > Cy > Fia, 0]
+      - [7, Gus, 2, Ada > Bo > Gus, 0]

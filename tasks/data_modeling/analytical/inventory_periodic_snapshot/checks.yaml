@@ -1,0 +1,52 @@
+checks:
+  - {name: snapshot_columns, type: columns, table: fct_inventory_daily, columns: [snapshot_date, sku, quantity_on_hand, net_change]}
+
+  - name: dense_grid_one_row_per_product_per_day
+    type: assert
+    weight: 2
+    sql: |
+      SELECT count(*) = 30 AND count(DISTINCT (snapshot_date, sku)) = 30
+         AND min(snapshot_date) = DATE '2024-01-01' AND max(snapshot_date) = DATE '2024-01-10'
+      FROM fct_inventory_daily
+
+  - name: snapshot_rows
+    type: rows
+    weight: 4
+    sql: SELECT CAST(snapshot_date AS VARCHAR), sku, quantity_on_hand, net_change FROM fct_inventory_daily
+    expected:
+      - ['2024-01-01', P1, 12, 2]
+      - ['2024-01-02', P1, 12, 0]
+      - ['2024-01-03', P1, 8, -4]
+      - ['2024-01-04', P1, 8, 0]
+      - ['2024-01-05', P1, 8, 0]
+      - ['2024-01-06', P1, 8, 0]
+      - ['2024-01-07', P1, 0, -8]
+      - ['2024-01-08', P1, 0, 0]
+      - ['2024-01-09', P1, 0, 0]
+      - ['2024-01-10', P1, 0, 0]
+      - ['2024-01-01', P2, 0, 0]
+      - ['2024-01-02', P2, 20, 20]
+      - ['2024-01-03', P2, 20, 0]
+      - ['2024-01-04', P2, 20, 0]
+      - ['2024-01-05', P2, 10, -10]
+      - ['2024-01-06', P2, 10, 0]
+      - ['2024-01-07', P2, 10, 0]
+      - ['2024-01-08', P2, 10, 0]
+      - ['2024-01-09', P2, 10, 0]
+      - ['2024-01-10', P2, 10, 0]
+      - ['2024-01-01', P3, 0, 0]
+      - ['2024-01-02', P3, 0, 0]
+      - ['2024-01-03', P3, 0, 0]
+      - ['2024-01-04', P3, 7, 7]
+      - ['2024-01-05', P3, 7, 0]
+      - ['2024-01-06', P3, 7, 0]
+      - ['2024-01-07', P3, 7, 0]
+      - ['2024-01-08', P3, 7, 0]
+      - ['2024-01-09', P3, 7, 0]
+      - ['2024-01-10', P3, 5, -2]
+
+  - name: semi_additive_average
+    type: rows
+    weight: 2
+    sql: SELECT sku, avg_quantity_on_hand FROM rpt_avg_on_hand
+    expected: [[P1, 5.60], [P2, 12.00], [P3, 4.70]]

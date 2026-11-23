@@ -1,0 +1,8 @@
+fields:
+  - {path: a1, expected: 0}
+  - {path: a2, expected: 1}
+  - {path: a3, expected: 2, weight: 2}
+  - {path: a4, expected: 3, weight: 2}
+  - {path: a5, expected: 1}
+  - {path: a6, expected: 4, weight: 2}
+  - {path: a7, expected: 6, weight: 2}
