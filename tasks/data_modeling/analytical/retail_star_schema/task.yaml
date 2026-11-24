@@ -1,0 +1,17 @@
+id: data_modeling.analytical.retail_star_schema
+title: Build a star schema with surrogate keys, unknown members and a date dimension
+category: data_modeling
+subcategory: analytical
+difficulty: medium
+answer_type: sql
+tags: [kimball, star-schema, surrogate-keys, unknown-member, date-dimension, referential-integrity]
+sources:
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 3 (Retail Sales)"
+    note: Star schema for retail sales, the calendar date dimension and surrogate keys.
+  - title: "Kimball Group: Dimensional Modeling Techniques"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+    note: Dimension surrogate keys, calendar date dimensions, and avoiding null foreign keys in fact tables.
+  - title: "Kimball Group: The 10 Essential Rules of Dimensional Modeling"
+    url: https://www.kimballgroup.com/2009/05/the-10-essential-rules-of-dimensional-modeling/
+  - title: "dbt Developer Hub: Dimensional modeling"
+    url: https://docs.getdbt.com/terms/dimensional-modeling

@@ -1,0 +1,15 @@
+id: data_modeling.analytical.subscription_mrr_dimensional_design
+title: Design a dimensional model for SaaS subscription revenue (MRR and churn)
+category: data_modeling
+subcategory: analytical
+difficulty: hard
+answer_type: rubric
+tags: [kimball, four-step-design, grain, periodic-snapshot, mrr, churn, scd, saas]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (four-step dimensional design process)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "Kimball Group Design Tip #167: Complementary Fact Table Types"
+    url: https://www.kimballgroup.com/2014/06/design-tip-167-complementary-fact-table-types/
+  - title: "Exponent: How to answer data modeling questions"
+    url: https://www.tryexponent.com/courses/data-engineering/data-modeling-interviews/answer-data-modeling-questions
+    note: Open-ended "model this business" questions in analytics engineering interviews.

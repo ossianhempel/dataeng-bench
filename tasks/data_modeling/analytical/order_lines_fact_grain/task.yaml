@@ -1,0 +1,17 @@
+id: data_modeling.analytical.order_lines_fact_grain
+title: Build a transaction fact table at order-line grain
+category: data_modeling
+subcategory: analytical
+difficulty: easy
+answer_type: sql
+tags: [kimball, grain, transaction-fact, deduplication, additive-measures]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (declare the grain; transaction fact tables)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 3 (Retail Sales)"
+    note: Four-step design process and the order-line as the atomic grain.
+  - title: "Kimball Group: The 10 Essential Rules of Dimensional Modeling"
+    url: https://www.kimballgroup.com/2009/05/the-10-essential-rules-of-dimensional-modeling/
+    note: Rule on ensuring every fact table has a single, declared grain.
+  - title: "techinterview.org: The grain question that sinks data modeling interviews"
+    url: https://www.techinterview.org/post/3233476147/grain-question-data-modeling-interviews/

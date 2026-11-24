@@ -1,0 +1,22 @@
+{
+  "fact_tables": {
+    "f1": "transaction",
+    "f2": "accumulating_snapshot",
+    "f3": "periodic_snapshot",
+    "f4": "factless",
+    "f5": "periodic_snapshot",
+    "f6": "factless",
+    "f7": "accumulating_snapshot",
+    "f8": "transaction"
+  },
+  "measures": {
+    "m1": "additive",
+    "m2": "semi_additive",
+    "m3": "non_additive",
+    "m4": "non_additive",
+    "m5": "semi_additive",
+    "m6": "additive",
+    "m7": "non_additive",
+    "m8": "semi_additive"
+  }
+}

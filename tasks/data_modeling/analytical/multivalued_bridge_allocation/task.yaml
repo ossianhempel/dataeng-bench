@@ -1,0 +1,13 @@
+id: data_modeling.analytical.multivalued_bridge_allocation
+title: Allocate account balances to customers through a weighted bridge table
+category: data_modeling
+subcategory: analytical
+difficulty: hard
+answer_type: sql
+tags: [kimball, bridge-table, multivalued-dimension, weighting-factor, double-counting]
+sources:
+  - title: "Kimball Group: Multivalued Dimensions and Bridge Tables"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/multivalued-dimension-bridge-table/
+    note: Weighting factors that sum to 1 give correctly weighted reports; ignoring them gives impact reports.
+  - title: "R. Kimball and M. Ross, The Data Warehouse Toolkit, 3rd ed., Wiley, 2013, chapter 10 (Financial Services)"
+    note: Bank accounts with multiple account holders.

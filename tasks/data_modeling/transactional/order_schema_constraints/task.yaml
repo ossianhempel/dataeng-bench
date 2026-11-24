@@ -1,0 +1,17 @@
+id: data_modeling.transactional.order_schema_constraints
+title: Enforce business rules with keys and constraints in an order schema
+category: data_modeling
+subcategory: transactional
+difficulty: medium
+answer_type: sql
+tags: [ddl, primary-keys, foreign-keys, unique, check-constraints, defaults, data-integrity]
+sources:
+  - title: "E. F. Codd, \"A Relational Model of Data for Large Shared Data Banks\", Communications of the ACM 13(6), 1970"
+    url: https://dl.acm.org/doi/10.1145/362384.362685
+    note: Primary and foreign keys as the basis for referential integrity.
+  - title: "DuckDB documentation: Constraints"
+    url: https://duckdb.org/docs/stable/sql/constraints.html
+    note: Constraint types available in the grading engine.
+  - title: "Exponent: Data modeling interviews (data engineering course)"
+    url: https://www.tryexponent.com/courses/data-engineering/data-modeling-interviews/data-modeling-intro
+    note: Interviewers ask candidates to turn stated business rules into keys and constraints.

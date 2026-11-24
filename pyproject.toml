@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dataeng-bench"
+version = "0.1.0"
+description = "An open benchmark for evaluating LLMs on data and analytics engineering work."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = [
+  "duckdb>=1.1",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+dataeng-bench = "dataeng_bench.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dataeng_bench"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

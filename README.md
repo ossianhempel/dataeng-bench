@@ -14,7 +14,24 @@ The aim is to:
 
 ## Status
 
-Early scaffolding. Task design, harness and results site are coming next.
+The first category, **data modeling**, has 19 tasks covering transactional
+(OLTP) and analytical (OLAP) modeling. See [tasks/data_modeling](tasks/data_modeling/README.md).
+The model-running harness and the results site are next.
+
+## Quick start
+
+```bash
+pip install -e '.[dev]'
+dataeng-bench list                                   # all tasks
+dataeng-bench show tasks/data_modeling/analytical/scd2_from_snapshots
+dataeng-bench grade tasks/data_modeling/analytical/scd2_from_snapshots my_answer.sql
+dataeng-bench validate                               # reference answers pass, known mistakes fail
+pytest
+```
+
+SQL tasks run against [DuckDB](https://duckdb.org), so every task is
+reproducible locally with no warehouse account. See [docs/task-format.md](docs/task-format.md)
+and [docs/grading.md](docs/grading.md).
 
 ## License
 

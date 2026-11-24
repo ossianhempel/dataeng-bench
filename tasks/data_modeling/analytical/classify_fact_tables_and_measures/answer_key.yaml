@@ -1,0 +1,17 @@
+fields:
+  - {path: fact_tables.f1, expected: transaction}
+  - {path: fact_tables.f2, expected: accumulating_snapshot}
+  - {path: fact_tables.f3, expected: periodic_snapshot}
+  - {path: fact_tables.f4, expected: factless}
+  - {path: fact_tables.f5, expected: periodic_snapshot}
+  - {path: fact_tables.f6, expected: factless}
+  - {path: fact_tables.f7, expected: accumulating_snapshot}
+  - {path: fact_tables.f8, expected: transaction}
+  - {path: measures.m1, expected: additive}
+  - {path: measures.m2, expected: semi_additive}
+  - {path: measures.m3, expected: non_additive}
+  - {path: measures.m4, expected: non_additive}
+  - {path: measures.m5, expected: semi_additive}
+  - {path: measures.m6, expected: additive}
+  - {path: measures.m7, expected: non_additive}
+  - {path: measures.m8, expected: semi_additive}

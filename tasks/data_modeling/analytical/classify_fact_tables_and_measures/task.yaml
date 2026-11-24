@@ -1,0 +1,15 @@
+id: data_modeling.analytical.classify_fact_tables_and_measures
+title: Classify fact table types and measure additivity
+category: data_modeling
+subcategory: analytical
+difficulty: easy
+answer_type: structured
+tags: [kimball, transaction-fact, periodic-snapshot, accumulating-snapshot, factless-fact, additivity]
+sources:
+  - title: "Kimball Group: Dimensional Modeling Techniques (fact table types; additive, semi-additive, non-additive facts)"
+    url: https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/
+  - title: "Kimball Group Design Tip #167: Complementary Fact Table Types"
+    url: https://www.kimballgroup.com/2014/06/design-tip-167-complementary-fact-table-types/
+  - title: "DataCamp: Data warehouse interview questions"
+    url: https://www.datacamp.com/blog/data-warehouse-interview-questions
+    note: Fact table types and additivity are standard screening questions.

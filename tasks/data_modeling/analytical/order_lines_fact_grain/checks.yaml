@@ -1,0 +1,48 @@
+checks:
+  - name: has_required_columns
+    type: columns
+    table: fct_order_lines
+    columns: [order_id, line_number, customer_id, product_sku, order_date, quantity,
+              gross_amount, discount_amount, net_amount]
+
+  - name: one_row_per_order_line
+    type: assert
+    weight: 2
+    sql: SELECT count(*) = count(DISTINCT (order_id, line_number)) FROM fct_order_lines
+
+  - name: excludes_cancelled_and_orphan_orders
+    type: rows
+    weight: 2
+    sql: SELECT DISTINCT order_id FROM fct_order_lines
+    expected: [[1001], [1002], [1004]]
+
+  - name: latest_delivery_wins
+    type: rows
+    weight: 2
+    sql: SELECT quantity, gross_amount FROM fct_order_lines WHERE order_id = 1004 AND line_number = 1
+    expected: [[3, 22.50]]
+
+  - name: order_date_is_a_date
+    type: assert
+    sql: |
+      SELECT data_type = 'DATE' FROM information_schema.columns
+      WHERE table_name = 'fct_order_lines' AND column_name = 'order_date'
+
+  - name: rows_match_expected
+    type: rows
+    weight: 3
+    sql: |
+      SELECT order_id, line_number, customer_id, product_sku, CAST(order_date AS VARCHAR),
+             quantity, gross_amount, discount_amount, net_amount
+      FROM fct_order_lines
+    expected:
+      - [1001, 1, C1, SKU-A, '2024-02-01', 2, 20.00, 0.00, 20.00]
+      - [1001, 2, C1, SKU-B, '2024-02-01', 1, 25.00, 5.00, 20.00]
+      - [1002, 1, C2, SKU-A, '2024-02-01', 1, 10.00, 0.00, 10.00]
+      - [1004, 1, C3, SKU-C, '2024-02-03', 3, 22.50, 0.00, 22.50]
+      - [1004, 2, C3, SKU-A, '2024-02-03', 5, 50.00, 2.50, 47.50]
+
+  - name: net_amount_total
+    type: rows
+    sql: SELECT sum(net_amount) FROM fct_order_lines
+    expected: [[120.00]]
