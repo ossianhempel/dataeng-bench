@@ -1,0 +1,49 @@
+---
+// Variant x task grid. One sequential blue ramp: darker means a higher score.
+import { type Run, summarize, taskById, shortTaskName } from "../lib/data";
+interface Props { run: Run }
+const { run } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const rows = summarize(run);
+const tasks = run.benchmark.task_ids.map(
+  (id) => taskById(id) ?? { id, slug: "", subcategory: "other", title: id, difficulty: "", answer_type: "" },
+);
+type T = (typeof tasks)[number];
+const groups: { name: string; tasks: T[] }[] = [];
+for (const t of [...tasks].sort((a, b) => b.subcategory.localeCompare(a.subcategory) || a.id.localeCompare(b.id))) {
+  const g = groups.at(-1);
+  if (g && g.name === t.subcategory) g.tasks.push(t);
+  else groups.push({ name: t.subcategory, tasks: [t] });
+}
+const bg = (s: number) => `color-mix(in oklab, var(--seq-hi) ${Math.round(s * 100)}%, var(--seq-lo))`;
+const fg = (s: number) => (s >= 0.55 ? "#fff" : "var(--ink-2)");
+---
+<div class="table-wrap" style="padding:16px">
+  <table class="heat">
+    <thead>
+      <tr class="group-row">
+        <th></th>
+        {groups.map((g, i) => <>{i > 0 && <th class="gap"></th>}<th colspan={g.tasks.length}>{g.name}</th></>)}
+      </tr>
+      <tr>
+        <th></th>
+        {groups.map((g, i) => <>{i > 0 && <th class="gap"></th>}{g.tasks.map((t) => (
+          <th><div><a href={t.slug ? `${base}tasks/${t.slug}/` : undefined} title={t.title}>{shortTaskName(t.id)}</a></div></th>
+        ))}</>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <th scope="row">{r.variant.label}</th>
+          {groups.map((g, i) => <>{i > 0 && <td class="gap"></td>}{g.tasks.map((t) => {
+            const s = r.taskScores.get(t.id) ?? 0;
+            return <td class="cell" style={`background:${bg(s)};color:${fg(s)}`}
+              data-tip={`<b>${t.title}</b><br>${r.variant.label}<br>Score ${Math.round(s * 100)} / 100 · ${t.difficulty} · ${t.answer_type}`}>{Math.round(s * 100)}</td>;
+          })}</>)}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <div class="heat-scale"><span>0</span><span class="ramp"></span><span>100</span><span>Task score, mean over attempts. Hover a cell for details; click a column name to open the task.</span></div>
+</div>

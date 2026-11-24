@@ -1,0 +1,44 @@
+---
+import Base from "../../layouts/Base.astro";
+import ScoreChart from "../../components/ScoreChart.astro";
+import Breakdown from "../../components/Breakdown.astro";
+import Heatmap from "../../components/Heatmap.astro";
+import { getRuns, type Run, REPO_URL, fmtDate } from "../../lib/data";
+
+export function getStaticPaths() {
+  return getRuns().map((run) => ({ params: { id: run.id }, props: { run } }));
+}
+const { run } = Astro.props as { run: Run };
+const fmtSettings = (s?: Record<string, unknown>) =>
+  s && Object.keys(s).length ? Object.entries(s).map(([k, v]) => `${k}: ${v}`).join(", ") : "defaults";
+---
+<Base title={run.title} description={run.description}>
+  <p style="margin-top:24px"><a href={`${import.meta.env.BASE_URL}runs/`}>← All runs</a></p>
+  <h1>{run.title}</h1>
+  {run.description && <p class="lede">{run.description}</p>}
+
+  <ScoreChart run={run} kicker={run.published ? "Published run" : "Draft run"} />
+
+  <h2>Variants in this run</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Variant</th><th>Model</th><th>Provider</th><th>Settings</th></tr></thead>
+      <tbody>
+        {run.variants.map((v) => (
+          <tr><td>{v.label}</td><td><code>{v.model}</code></td><td>{v.provider}</td><td class="muted">{fmtSettings(v.settings)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted" style="font-size:13px">
+    Run settings: {fmtSettings(run.settings)}.
+    {run.benchmark.commit && <> Tasks at commit <a href={`${REPO_URL}/tree/${run.benchmark.commit}/tasks`}><code>{run.benchmark.commit}</code></a>.</>}
+    {" "}Created {fmtDate(run.created_at)}. <a href={`${REPO_URL}/blob/main/runs/${run.id}.json`}>Raw results (JSON)</a>.
+  </p>
+
+  <h2>Breakdown</h2>
+  <Breakdown run={run} />
+
+  <h2>Every task, every variant</h2>
+  <Heatmap run={run} />
+</Base>
