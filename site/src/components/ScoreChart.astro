@@ -1,0 +1,61 @@
+---
+// Hero chart: overall score per variant, ranked. Color = model, so variants of
+// the same model read as one family. Built as HTML so it is crisp in screenshots.
+import { type Run, summarize, modelSlots, fmtDate, fmtScore, REPO_URL } from "../lib/data";
+interface Props { run: Run; kicker?: string; href?: string }
+const { run, kicker = "Latest published run", href } = Astro.props;
+const rows = summarize(run);
+const slots = modelSlots(run);
+const color = (model: string) => { const s = slots.get(model)!; return s <= 8 ? `var(--s${s})` : "var(--muted)"; };
+const attempts = Number(run.settings?.attempts_per_task ?? 1);
+const nTasks = run.benchmark.task_ids.length;
+const ticks = [0, 25, 50, 75, 100];
+const W = (pct: number) => `calc((100% - 92px) * ${pct / 100})`;
+const provider = (m: string) => run.variants.find((v) => v.model === m)!.provider;
+---
+<section class="card chart-card" aria-labelledby={`chart-${run.id}`}>
+  <div class="chart-head">
+    <div>
+      <div class="chart-kicker">{kicker} · {fmtDate(run.created_at)}</div>
+      <h2 class="chart-title" id={`chart-${run.id}`}>
+        {href ? <a href={href} style="color:inherit">{run.title}</a> : run.title}
+      </h2>
+      <p class="chart-sub">
+        Mean score across {nTasks} data engineering tasks{attempts > 1 ? `, ${attempts} attempts each` : ""}. Higher is better.
+      </p>
+    </div>
+    <div class="badges">
+      {run.sample && <span class="badge sample">Sample data</span>}
+      {!run.published && <span class="badge draft">Draft</span>}
+    </div>
+  </div>
+
+  {slots.size > 1 && (
+    <div class="legend" aria-label="Models">
+      {[...slots.keys()].map((m) => (
+        <span><i class="swatch" style={`background:${color(m)}`}></i>{m} <span class="muted">({provider(m)})</span></span>
+      ))}
+    </div>
+  )}
+
+  <div class="bars" role="list">
+    {rows.map((r) => (
+      <>
+        <div class="bar-label" role="listitem">{r.variant.label}<small>{r.variant.provider}</small></div>
+        <div class="bar-track"
+          data-tip={`<b>${r.variant.label}</b><br>Score ${fmtScore(r.overall)} / 100<br>Pass rate ${fmtScore(r.passRate)}%<br>Model <code>${r.variant.model}</code>${r.cost != null ? `<br>Cost $${r.cost.toFixed(2)}` : ""}`}>
+          {ticks.slice(1).map((t) => <i class="gridline" style={`left:${W(t)}`}></i>)}
+          <div class="bar" style={`width:${W(r.overall)};background:${color(r.variant.model)}`}></div>
+          <div class="bar-value" style={`left:${W(r.overall)}`}>{fmtScore(r.overall)}<small>{Math.round(r.passRate)}% pass</small></div>
+        </div>
+      </>
+    ))}
+    <div aria-hidden="true"></div>
+    <div class="axis-ticks" aria-hidden="true">{ticks.map((t) => <span style={`left:${W(t)}`}>{t}</span>)}</div>
+  </div>
+
+  <div class="chart-foot">
+    <span>Each task is scored 0 to 100 by automatic checks or a rubric judge; every task counts the same.</span>
+    <span>dataeng-bench · {REPO_URL.replace("https://", "")}</span>
+  </div>
+</section>

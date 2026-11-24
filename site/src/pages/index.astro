@@ -1,0 +1,56 @@
+---
+import Base from "../layouts/Base.astro";
+import ScoreChart from "../components/ScoreChart.astro";
+import Breakdown from "../components/Breakdown.astro";
+import Heatmap from "../components/Heatmap.astro";
+import { getRuns, getTasks, latestPublishedRun, fmtDate, summarize } from "../lib/data";
+const base = import.meta.env.BASE_URL;
+const run = latestPublishedRun();
+const tasks = getTasks();
+const categories = new Set(tasks.map((t) => t.category)).size;
+const others = getRuns().filter((r) => r.id !== run?.id).slice(0, 4);
+---
+<Base title="dataeng-bench">
+  <h1>How well do LLMs do data engineering?</h1>
+  <p class="lede">
+    An open benchmark of real data and analytics engineering work: modeling, SQL, dbt and pipelines.
+    {tasks.length} tasks in {categories} {categories === 1 ? "category" : "categories"} so far, each graded automatically against DuckDB or by a rubric.
+  </p>
+
+  {run ? (
+    <>
+      <ScoreChart run={run} href={`${base}runs/${run.id}/`} />
+      <h2>Where the points come from</h2>
+      <Breakdown run={run} />
+      <h2>Every task, every variant</h2>
+      <Heatmap run={run} />
+    </>
+  ) : (
+    <div class="card"><p>No published runs yet. Add a run file to <code>runs/</code> to see results here.</p></div>
+  )}
+
+  {others.length > 0 && (
+    <>
+      <h2>Other runs</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Run</th><th>Date</th><th class="r">Variants</th><th>Best</th></tr></thead>
+          <tbody>
+            {others.map((r) => {
+              const top = summarize(r)[0];
+              return (
+                <tr>
+                  <td><a href={`${base}runs/${r.id}/`}>{r.title}</a> {!r.published && <span class="badge draft">Draft</span>}</td>
+                  <td class="num">{fmtDate(r.created_at)}</td>
+                  <td class="r">{r.variants.length}</td>
+                  <td>{top?.variant.label} <span class="muted num">{top?.overall.toFixed(1)}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p><a href={`${base}runs/`}>All runs →</a></p>
+    </>
+  )}
+</Base>

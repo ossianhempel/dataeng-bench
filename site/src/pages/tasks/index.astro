@@ -1,0 +1,85 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getTasks, latestPublishedRun, summarize } from "../../lib/data";
+const base = import.meta.env.BASE_URL;
+const tasks = getTasks();
+const run = latestPublishedRun();
+const sums = run ? summarize(run) : [];
+// Mean score over all variants in the latest published run: a rough "how hard is it" signal.
+const avg = (id: string) => {
+  if (!run || !run.benchmark.task_ids.includes(id)) return undefined;
+  return (sums.reduce((a, s) => a + (s.taskScores.get(id) ?? 0), 0) / sums.length) * 100;
+};
+const facets = {
+  subcategory: [...new Set(tasks.map((t) => t.subcategory))].sort().reverse(),
+  difficulty: ["easy", "medium", "hard"].filter((d) => tasks.some((t) => t.difficulty === d)),
+  answer_type: ["sql", "structured", "rubric"].filter((d) => tasks.some((t) => t.answer_type === d)),
+};
+const labels: Record<string, string> = { subcategory: "Type", difficulty: "Difficulty", answer_type: "Answer" };
+---
+<Base title="Tasks" description="Browse every task in the benchmark: prompt, grading and sources.">
+  <h1>Tasks</h1>
+  <p class="lede">
+    Every task gives the model a realistic brief and grades the answer automatically: SQL is run against DuckDB fixtures and checked,
+    structured answers are compared field by field, and open design questions are scored by a rubric judge.
+  </p>
+
+  <div class="filters">
+    <input type="search" id="q" placeholder="Search titles and tags" aria-label="Search tasks" />
+    {Object.entries(facets).map(([key, values]) => (
+      <div class="chip-group" data-facet={key}>
+        <span class="lbl">{labels[key]}</span>
+        {values.map((v) => <button class="chip" type="button" aria-pressed="false" data-value={v}>{v === "sql" ? "SQL" : v}</button>)}
+      </div>
+    ))}
+  </div>
+  <div class="count" id="count">{tasks.length} tasks</div>
+
+  <div class="task-list">
+    {tasks.map((t) => {
+      const a = avg(t.id);
+      return (
+        <a class="task-row" href={`${base}tasks/${t.slug}/`}
+          data-subcategory={t.subcategory} data-difficulty={t.difficulty} data-answer_type={t.answer_type}
+          data-text={`${t.title} ${t.tags.join(" ")} ${t.id}`.toLowerCase()}>
+          <span class="t-title">{t.title}</span>
+          <span class="t-meta">{t.category.replace("_", " ")} · {t.subcategory} · {t.difficulty} · {t.answer_type === "sql" ? "SQL" : t.answer_type}</span>
+          {a != null && (
+            <span class="t-score" data-tip={`Mean score over all ${sums.length} variants in the latest published run`}>
+              Avg score <b class="num" style="color:var(--ink)">{a.toFixed(0)}</b>
+              <div class="mini-track"><div class="mini-bar" style={`width:${a}%`}></div></div>
+            </span>
+          )}
+        </a>
+      );
+    })}
+  </div>
+
+  <script is:inline>
+    const rows = [...document.querySelectorAll(".task-row")];
+    const q = document.getElementById("q");
+    const count = document.getElementById("count");
+    const active = {};
+    function apply() {
+      const text = q.value.trim().toLowerCase();
+      let n = 0;
+      for (const r of rows) {
+        const ok = (!text || r.dataset.text.includes(text)) &&
+          Object.entries(active).every(([k, set]) => set.size === 0 || set.has(r.dataset[k]));
+        r.hidden = !ok; n += ok;
+      }
+      count.textContent = n === rows.length ? `${n} tasks` : `${n} of ${rows.length} tasks`;
+    }
+    for (const g of document.querySelectorAll("[data-facet]")) {
+      const key = g.dataset.facet; active[key] = new Set();
+      g.addEventListener("click", (e) => {
+        const b = e.target.closest(".chip"); if (!b) return;
+        const on = b.getAttribute("aria-pressed") !== "true";
+        b.setAttribute("aria-pressed", String(on));
+        on ? active[key].add(b.dataset.value) : active[key].delete(b.dataset.value);
+        apply();
+      });
+    }
+    q.addEventListener("input", apply);
+  </script>
+</Base>

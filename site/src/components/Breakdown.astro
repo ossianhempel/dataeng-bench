@@ -1,0 +1,41 @@
+---
+import { type Run, summarize, modelSlots, fmtScore } from "../lib/data";
+interface Props { run: Run }
+const { run } = Astro.props;
+const rows = summarize(run);
+const slots = modelSlots(run);
+type Row = (typeof rows)[number];
+const keys = (pick: (r: Row) => Record<string, number>, order: string[]) =>
+  order.filter((k) => rows.some((r) => pick(r)[k] != null));
+const subs = keys((r) => r.bySubcategory, ["transactional", "analytical"]);
+const diffs = keys((r) => r.byDifficulty, ["easy", "medium", "hard"]);
+const best = (pick: (r: Row) => number | undefined) => Math.max(...rows.map((r) => pick(r) ?? -1));
+const cell = (v: number | undefined, top: number) =>
+  v == null ? "–" : v === top ? `<span class="cell-strong">${fmtScore(v)}</span>` : fmtScore(v);
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Variant</th><th class="r">Overall</th><th class="r">Pass rate</th>
+        {subs.map((s) => <th class="r">{cap(s)}</th>)}
+        {diffs.map((s) => <th class="r">{cap(s)}</th>)}
+        <th class="r">Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <td style="white-space:nowrap"><i class="swatch" style={`background:var(--s${Math.min(slots.get(r.variant.model)!, 8)});margin-right:8px`}></i>{r.variant.label}</td>
+          <td class="r" set:html={cell(r.overall, best((x) => x.overall))} />
+          <td class="r">{fmtScore(r.passRate)}%</td>
+          {subs.map((s) => <td class="r" set:html={cell(r.bySubcategory[s], best((x) => x.bySubcategory[s]))} />)}
+          {diffs.map((s) => <td class="r" set:html={cell(r.byDifficulty[s], best((x) => x.byDifficulty[s]))} />)}
+          <td class="r">{r.cost != null ? `$${r.cost.toFixed(2)}` : "–"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<p class="muted" style="font-size:13px">Scores are 0 to 100. Bold marks the best variant in each column.</p>

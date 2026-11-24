@@ -1,0 +1,40 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getRuns, summarize, modelSlots, fmtDate, INCLUDE_DRAFTS } from "../../lib/data";
+const base = import.meta.env.BASE_URL;
+const runs = getRuns();
+---
+<Base title="Runs" description="Every benchmark run: which models and settings were compared, on which tasks.">
+  <h1>Runs</h1>
+  <p class="lede">
+    Each run compares a set of model variants (a model plus settings such as reasoning effort or prompt) on the same tasks.
+    {INCLUDE_DRAFTS && " This build includes unpublished draft runs."}
+  </p>
+  <div class="run-list">
+    {runs.map((r) => {
+      const sum = summarize(r);
+      const slots = modelSlots(r);
+      const attempts = Number(r.settings?.attempts_per_task ?? 1);
+      return (
+        <a class="card run-row" href={`${base}runs/${r.id}/`}>
+          <div>
+            <div class="badges" style="margin-bottom:6px">
+              {r.sample && <span class="badge sample">Sample data</span>}
+              {!r.published && <span class="badge draft">Draft</span>}
+            </div>
+            <h3>{r.title}</h3>
+            <div class="run-meta">
+              {fmtDate(r.created_at)} · {r.variants.length} variants · {r.benchmark.task_ids.length} tasks · {attempts} {attempts === 1 ? "attempt" : "attempts"} per task
+            </div>
+          </div>
+          <div class="run-top">Best<b class="num">{sum[0]?.overall.toFixed(1)}</b>{sum[0]?.variant.label}</div>
+          <div class="variant-chips">
+            {r.variants.map((v) => (
+              <span class="variant-chip"><i class="swatch" style={`background:var(--s${Math.min(slots.get(v.model)!, 8)})`}></i>{v.label}</span>
+            ))}
+          </div>
+        </a>
+      );
+    })}
+  </div>
+</Base>

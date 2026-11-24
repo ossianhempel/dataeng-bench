@@ -170,7 +170,7 @@ conda-meta/
 .ropeproject
 
 # mkdocs/Zensical documentation
-/site
+# /site is the results site here, not mkdocs output
 
 # mypy
 .mypy_cache/
@@ -236,3 +236,9 @@ node_modules/
 target/
 dbt_packages/
 logs/
+
+# Results site
+!site/src/lib/
+site/node_modules/
+site/dist/
+site/.astro/
