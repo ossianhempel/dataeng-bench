@@ -15,4 +15,5 @@ jobs:
           python-version: "3.12"
       - run: pip install -e '.[dev]'
       - run: dataeng-bench validate
+      - run: dataeng-bench validate-runs
       - run: pytest -q

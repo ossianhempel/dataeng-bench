@@ -16,7 +16,16 @@ The aim is to:
 
 The first category, **data modeling**, has 19 tasks covering transactional
 (OLTP) and analytical (OLAP) modeling. See [tasks/data_modeling](tasks/data_modeling/README.md).
-The model-running harness and the results site are next.
+The model-running harness is next.
+
+## Results site
+
+[`site/`](site/README.md) is a static site that shows the latest published run,
+every past run and every task. It reads run files from `runs/`, in the format
+described in [docs/results-format.md](docs/results-format.md). The runs there
+now are sample data for fictional models.
+
+![Results chart](docs/img/site-chart-light.png)
 
 ## Quick start
 

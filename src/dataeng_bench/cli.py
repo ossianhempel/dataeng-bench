@@ -5,6 +5,7 @@
     dataeng-bench grade <task-dir> <answer-file> [--judge-reply FILE] [--json]
     dataeng-bench judge-prompt <task-dir> <answer-file>
     dataeng-bench validate [<task-dir> ...]
+    dataeng-bench validate-runs [<run.json> ...]
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from pathlib import Path
 
 from .grading.grade import grade
 from .grading.rubric import build_judge_prompt
+from .runs import RUNS_DIR, validate_run
 from .tasks import TASKS_DIR, discover_tasks, load_task
 
 
@@ -70,6 +72,20 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
+def _cmd_validate_runs(args: argparse.Namespace) -> int:
+    """Check run result files against the format in docs/results-format.md."""
+    paths = [Path(p) for p in args.runs] if args.runs else sorted(RUNS_DIR.glob("*.json"))
+    known = {t.id for t in discover_tasks()}
+    failures = 0
+    for path in paths:
+        errors = validate_run(json.loads(path.read_text()), known)
+        print(f"{'FAIL' if errors else 'ok  '}  {path.name}")
+        for e in errors:
+            print(f"        {e}")
+        failures += bool(errors)
+    return 1 if failures else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dataeng-bench")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -97,6 +113,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("validate", help="check reference and negative answers")
     p.add_argument("tasks", nargs="*")
     p.set_defaults(func=_cmd_validate)
+
+    p = sub.add_parser("validate-runs", help="check run result files in runs/")
+    p.add_argument("runs", nargs="*")
+    p.set_defaults(func=_cmd_validate_runs)
 
     args = parser.parse_args(argv)
     return args.func(args)
